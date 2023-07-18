@@ -7,7 +7,6 @@
 from urllib.request import urlopen
 from datetime import datetime, timedelta
 import numpy as np
-import certifi
 import json
 import os
 import csv
@@ -56,9 +55,10 @@ def get_jsonparsed_data(url):
 def CheckDateCreated(Ticker):
     profile_URL = "https://financialmodelingprep.com/api/v3/profile/" + Ticker + "?apikey=0e63f3c385fecfebb04cdcfce62d0ef2"
     profile = get_jsonparsed_data(profile_URL)
-
+    fin_growth_url = "https://financialmodelingprep.com/api/v3/financial-growth/" + Ticker + "?period=quarter&limit=80&apikey=0e63f3c385fecfebb04cdcfce62d0ef2"
+    fin_growth = get_jsonparsed_data(fin_growth_url)
     # Check if the profile data is not empty and 'ipoDate' key exists
-    if profile and 'ipoDate' in profile[0]:   
+    if profile and len(profile[0]['ipoDate']) > 1:   
         ipoDate = datetime.strptime(profile[0]['ipoDate'], '%Y-%m-%d')
         five_years_ago = datetime.now() - timedelta(days=5*365)  
         
@@ -68,7 +68,7 @@ def CheckDateCreated(Ticker):
 
 def GetInformationForStock(Ticker):
     if not CheckDateCreated(Ticker):
-        print("Too Young or Invalid Ticker")
+        print("Too Young, Invalid Ticker or Not Enough Avaliable Information")
         return
     dcf_url = "https://financialmodelingprep.com/api/v3/historical-discounted-cash-flow-statement/" + Ticker + "?period=quarter&apikey=0e63f3c385fecfebb04cdcfce62d0ef2"
     dcf = get_jsonparsed_data(dcf_url)
@@ -169,14 +169,5 @@ def GetInformationForStock(Ticker):
 # for i in range(len(sp500Information)):
 #     GetInformationForStock(sp500Information[i]['symbol'])
 #     # print(sp500Information[i]['symbol'])
-
-url = "https://financialmodelingprep.com/api/v3/available-traded/list?apikey=0e63f3c385fecfebb04cdcfce62d0ef2"
-sp500Information = get_jsonparsed_data(url)
-for i in range(len(sp500Information)):
-    if sp500Information[i]['type'] == "stock":
-        print("Collecting Data of Stock Number: " + str(i) + " Called " +  sp500Information[i]['symbol'])
-        GetInformationForStock(sp500Information[i]['symbol'])
-
-    
 
 
